@@ -1,1 +1,124 @@
+import numpy as np
+
+# Sigmoid Activation and Derivative
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# Input dataset for XOR
+X = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1]
+])
+
+# Expected output for XOR
+y = np.array([[0], [1], [1], [0]])
+
+# Seed for reproducibility
+np.random.seed(1)
+
+# Initialize weights and biases
+input_layer_neurons = X.shape[1]    # 2 inputs
+hidden_neurons = 4                  # You can adjust this
+output_neurons = 1
+
+# Weights
+wh = np.random.uniform(size=(input_layer_neurons, hidden_neurons))
+bh = np.zeros((1, hidden_neurons))
+wo = np.random.uniform(size=(hidden_neurons, output_neurons))
+bo = np.zeros((1, output_neurons))
+
+# Training process
+epochs = 10000
+lr = 0.1
+
+for epoch in range(epochs):
+    # Forward Propagation
+    zh = np.dot(X, wh) + bh
+    ah = sigmoid(zh)
+
+    zo = np.dot(ah, wo) + bo
+    ao = sigmoid(zo)
+
+    # Compute loss (optional)
+    loss = np.mean((y - ao) ** 2)
+
+    # Backward Propagation
+    error = y - ao
+    d_output = error * sigmoid_derivative(ao)
+
+    error_hidden = d_output.dot(wo.T)
+    d_hidden = error_hidden * sigmoid_derivative(ah)
+
+    # Update weights and biases
+    wo += ah.T.dot(d_output) * lr
+    bo += np.sum(d_output, axis=0, keepdims=True) * lr
+    wh += X.T.dot(d_hidden) * lr
+    bh += np.sum(d_hidden, axis=0, keepdims=True) * lr
+
+    # Print loss every 1000 epochs
+    if epoch % 1000 == 0:
+        print(f"Epoch {epoch}, Loss: {loss:.4f}")
+
+# Final output
+print("\nTrained Output:")
+print(np.round(ao, 3))
+
+
+
+
+
+"""
+Theory Explanation:
+
+What the program does:
+This is a simple implementation of a feedforward neural network using only NumPy to learn the XOR logic gate. It trains a two-layer neural network (one hidden layer) using sigmoid activation and backpropagation with gradient descent.
+
+What data structures are used and why:
+- `numpy.ndarray`: Used for all matrix and vector operations (inputs, weights, biases, activations).
+- Matrix multiplication (`dot`) and element-wise operations simplify forward and backward passes.
+
+Key operations of the program:
+
+1. **Initialization**:
+   - Inputs (`X`) and outputs (`y`) represent the XOR truth table.
+   - Random weights `wh` (input to hidden) and `wo` (hidden to output).
+   - Biases `bh` and `bo` initialized to zeros.
+
+2. **Forward Propagation**:
+   - Hidden layer activation `ah = sigmoid(X @ wh + bh)`
+   - Output layer activation `ao = sigmoid(ah @ wo + bo)`
+   - Produces predicted output for each input sample.
+
+3. **Loss Computation**:
+   - Mean Squared Error (MSE): `(y - ao)^2` averaged across samples.
+
+4. **Backward Propagation**:
+   - Output layer error: `d_output = (y - ao) * sigmoid_derivative(ao)`
+   - Hidden layer error: backpropagated via `wo`, then element-wise multiplied with derivative of `ah`
+   - Weights and biases are updated using gradients scaled by learning rate (`lr`).
+
+5. **Training**:
+   - Loops over `epochs` (10,000 times here) to iteratively reduce error.
+   - Prints loss every 1000 epochs to monitor convergence.
+
+6. **Final Output**:
+   - After training, prints the network's predictions for XOR inputs.
+
+Real-life use cases:
+- XOR demonstrates the need for non-linear models; a single-layer perceptron can't solve XOR.
+- Basis for understanding deeper architectures and activation functions.
+- Fundamental in AI curriculum for hands-on understanding of forward & backpropagation.
+
+Sample Input/Output:
+Input:
+    [0, 0] → Output: ~0  
+    [0, 1] → Output: ~1  
+    [1, 0] → Output: ~1  
+    [1, 1] → Output: ~0  
+"""
 
