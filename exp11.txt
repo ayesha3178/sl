@@ -45,3 +45,36 @@ nn_model.fit(X_train, y_train, epochs=50, verbose=0)
 # Evaluate
 nn_loss, nn_accuracy = nn_model.evaluate(X_test, y_test)
 print("Neural Network Accuracy:", nn_accuracy)
+
+"""
+Theory Explanation:
+
+What the program does:
+This Python program compares the performance of two machine learning models—Logistic Regression and a simple Feedforward Neural Network—on a binary classification task using the Iris dataset. The classification is whether a given sample belongs to the 'Setosa' species or not.
+
+What data structures are used and why:
+- NumPy arrays: Used to handle numerical data efficiently, such as features and labels.
+- TensorFlow's Sequential model: A linear stack of layers that is ideal for building both logistic regression and neural network models in a clear and straightforward way.
+- scikit-learn’s built-in datasets and utilities: Used for loading the dataset, preprocessing, and splitting data.
+
+The key operations of the program:
+1. **Data loading and preprocessing**: Loads the Iris dataset, transforms the problem into binary classification, and standardizes the feature values.
+2. **Model building**: 
+   - First model: Logistic regression (1 dense layer with sigmoid).
+   - Second model: Neural network (1 hidden layer with ReLU + 1 output layer with sigmoid).
+3. **Model compilation and training**: Models are compiled with the Adam optimizer and trained using binary cross-entropy loss.
+4. **Evaluation**: Accuracy of both models is evaluated on test data.
+
+Potential real-life use cases:
+- Binary classification tasks like spam detection, disease prediction (e.g., diabetes: yes/no), or quality control (defective product or not).
+- Comparing the performance of simpler models vs. deeper neural networks on real-world problems.
+
+A sample input/output scenario with an explanation:
+- Suppose a sample from the Iris dataset has these features (after scaling): `[0.5, -1.2, 0.3, 0.1]`
+- The logistic regression model processes the input and outputs a value between 0 and 1 (say 0.85), indicating the probability that it's a Setosa flower.
+- If the probability is above 0.5, it classifies it as Setosa (1), otherwise not (0).
+- Output might be:
+  Logistic Regression Accuracy: 0.9333  
+  Neural Network Accuracy: 0.9555  
+  This suggests that the neural network performed slightly better on this binary classification task.
+"""
