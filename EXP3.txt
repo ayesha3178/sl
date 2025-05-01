@@ -37,3 +37,50 @@ print("Digit | Prediction (0=Even, 1=Odd)")
 for i, xi in enumerate(X):
     result = predict(xi, weights, bias)
     print(f"  {i}   |      {result}")
+
+"""
+Theory Explanation:
+
+What the program does:
+This program implements a simple perceptron model to classify whether a given digit (0-9) is even or odd.
+Instead of using numeric values directly, it encodes each digit as a 7-bit ASCII binary vector, trains the perceptron on these vectors, and uses it to predict parity (even = 0, odd = 1).
+
+The key operations of the program:
+1. **ASCII Binary Encoding**: Each digit (e.g., '0', '1', ..., '9') is converted to its 7-bit ASCII binary representation using the `to_ascii_binary()` function.
+2. **Labeling**: Each digit is labeled as 0 (even) or 1 (odd) based on its numeric value.
+3. **Perceptron Training**:
+   - Initialized with zero weights and bias.
+   - Trained over multiple epochs using the perceptron learning rule.
+   - Updates weights and bias based on prediction errors.
+4. **Prediction**: After training, the perceptron predicts for each digit whether it's even or odd by applying the learned weights and bias.
+
+Potential real-life use cases:
+- Demonstrates how simple binary representations can be used as inputs for machine learning models.
+- Useful for teaching basic supervised learning and perceptron behavior.
+- Can be extended to more complex classification problems such as character recognition or binary decision tasks.
+- Good foundational example for students beginning with neural networks or AI.
+
+A sample input/output scenario with an explanation:
+- Input Digit: '3'
+- ASCII Binary: '3' has an ASCII code of 51 → binary: 110011
+- 7-bit padded version: 0110011
+- This vector is used as input to the perceptron.
+- Label for '3': 1 (odd)
+- After training, the perceptron computes a weighted sum of the binary bits plus bias.
+- If the sum is >= 0, it predicts 1 (odd); otherwise, 0 (even).
+
+Sample Output:
+Digit | Prediction (0=Even, 1=Odd)
+  0   |      0
+  1   |      1
+  2   |      0
+  3   |      1
+  4   |      0
+  5   |      1
+  6   |      0
+  7   |      1
+  8   |      0
+  9   |      1
+
+This shows that the perceptron has successfully learned to distinguish even and odd digits based on their ASCII binary encodings.
+"""
