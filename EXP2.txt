@@ -21,3 +21,32 @@ print("---------------------")
 for inputs in input_combinations:
     output = mcp_neuron(inputs, weights, threshold)
     print(f"{inputs[0]} {inputs[1]} | {output}")
+
+"""
+Theory Explanation:
+
+What the program does:
+This program implements a McCulloch-Pitts (MCP) neuron model to simulate the logical function A AND (NOT B). It uses binary inputs and a simple threshold-based step activation to determine the output.
+
+The key operations of the program:
+1. `mcp_neuron` function computes the weighted sum of binary inputs and compares it against a threshold.
+2. Inputs A and B are defined for all binary combinations (00, 01, 10, 11).
+3. The weight for A is +1 and for B is -1 to simulate a NOT operation on B.
+4. If the weighted sum is greater than or equal to the threshold (1), the output is 1; otherwise, it's 0.
+
+Potential real-life use cases:
+- Basic logic gate simulation using neural models.
+- Understanding how early neural network models operate.
+- Foundation for building more complex perceptron models in machine learning.
+- Educational tools to explain neural activation and logic functions.
+
+A sample input/output scenario with an explanation:
+Inputs: A = 1, B = 0
+Weights: [1, -1]
+Threshold: 1
+
+Weighted sum = (1 * 1) + (0 * -1) = 1
+Since 1 >= 1 → Output = 1
+
+This matches the truth table for A AND (NOT B), which only outputs 1 when A is 1 and B is 0. All other combinations produce an output of 0.
+"""
