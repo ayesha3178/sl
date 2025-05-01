@@ -51,3 +51,32 @@ plt.grid(True)
 plt.tight_layout()
 plt.suptitle("Common Activation Functions in Neural Networks", fontsize=14, y=1.02)
 plt.show()
+
+"""
+Theory Explanation:
+
+What the program does:
+This Python program uses the NumPy and Matplotlib libraries to visualize five common activation functions used in neural networks: Sigmoid, Tanh, ReLU (Rectified Linear Unit), Leaky ReLU, and ELU (Exponential Linear Unit). It computes their values over a range of x-values from -10 to 10 and plots each function in a separate subplot for comparison.
+
+The key operations of the program:
+1. Generates a range of input values using `np.linspace`.
+2. Defines each activation function as a Python function.
+3. Applies each activation function to the input values.
+4. Uses Matplotlib to create subplots for each function and display them in a single figure with appropriate titles and grids.
+
+Potential real-life use cases:
+- Activation functions are crucial in building deep learning models and neural networks.
+- They introduce non-linearity into models, allowing networks to learn complex patterns.
+- ReLU and its variants are widely used in convolutional neural networks (CNNs) for tasks like image recognition, object detection, and NLP.
+- Sigmoid and Tanh are often used in binary classification and RNNs (Recurrent Neural Networks) respectively.
+
+A sample input/output scenario with an explanation:
+Input: The input to each activation function is a set of values ranging from -10 to 10.
+Example: For x = -2, 0, 2
+  - sigmoid(-2) ≈ 0.119, sigmoid(0) = 0.5, sigmoid(2) ≈ 0.881
+  - tanh(-2) ≈ -0.964, tanh(0) = 0, tanh(2) ≈ 0.964
+  - relu(-2) = 0, relu(0) = 0, relu(2) = 2
+  - leaky_relu(-2) = -0.02, leaky_relu(0) = 0, leaky_relu(2) = 2
+  - elu(-2) ≈ -0.8647, elu(0) = 0, elu(2) = 2
+These outputs demonstrate how each function behaves differently with negative and positive inputs, which directly influences how a neural network learns from data.
+"""
