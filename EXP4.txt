@@ -29,3 +29,33 @@ def plot_decision_boundary(X, y, model):
 
 # Step 4: Visualize
 plot_decision_boundary(X, y, model)
+
+"""
+Theory Explanation:
+
+What the program does:
+This program generates a 2D linearly separable dataset and uses the Perceptron algorithm from scikit-learn to classify the data points. After training, it visualizes the decision boundary that the Perceptron has learned.
+
+The key operations of the program:
+1. **Data Generation**: The `make_blobs()` function generates 100 two-dimensional points grouped into two separate clusters (classes).
+2. **Model Training**: A `Perceptron` classifier is trained on the generated dataset. The perceptron learns a linear decision boundary that separates the two classes.
+3. **Decision Boundary Plotting**:
+   - A grid of points covering the feature space is created using `np.meshgrid`.
+   - The trained model is used to predict the class for each point in the grid.
+   - The decision surface is plotted using `contourf` and the training data points are overlaid using `scatter`.
+
+Potential real-life use cases:
+- Demonstrates how a basic linear classifier works for binary classification.
+- Useful for teaching fundamental concepts in machine learning such as linear separability, decision boundaries, and perceptron learning.
+- Can be extended to feature-rich real-world problems like email spam detection, credit risk analysis, or medical diagnosis (where features are linearly separable).
+
+A sample input/output scenario with an explanation:
+- Input: 2D feature vectors for each sample, e.g., [2.5, 4.1], [1.0, 1.2], etc.
+- Output: Predicted class label (0 or 1) based on which side of the decision boundary the point lies.
+- Example: Suppose the decision boundary line separates data into Class 0 (left region) and Class 1 (right region). Any test point's location relative to the boundary determines its classification.
+
+The resulting plot shows:
+- The background color-coded decision regions for each class.
+- The actual data points, colored according to their true class.
+- A clear visual indication of how well the perceptron has separated the data.
+"""
