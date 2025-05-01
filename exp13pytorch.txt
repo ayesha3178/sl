@@ -60,3 +60,48 @@ with torch.no_grad():
         correct += (predicted == labels).sum().item()
         total += labels.size(0)
 print("PyTorch Test Accuracy:", correct / total)
+
+"""
+Theory Explanation:
+
+What the program does:
+This program implements a convolutional neural network (CNN) in PyTorch to classify handwritten digits from the MNIST dataset. It trains a model to recognize digits 0–9 using convolutional layers and fully connected layers.
+
+What data structures are used and why:
+- `torch.utils.data.DataLoader`: Efficiently loads data in batches, useful for training and evaluation.
+- `torch.Tensor`: Represents both inputs and outputs for neural network operations.
+- `nn.Sequential`: Groups layers together for cleaner architecture design.
+- `nn.Module`: Provides a base class for the custom CNN model.
+- `torch.no_grad()`: Prevents gradient tracking during evaluation for performance.
+
+The key operations of the program:
+1. **Data loading and transformation**:
+   - Downloads MNIST and converts images to tensors.
+   - Batches the data for training and testing.
+
+2. **Model architecture**:
+   - Two convolutional layers with ReLU activations and max-pooling to extract spatial features.
+   - Flattened output passed through two dense layers for classification.
+   - Output: logits for 10 classes (digits 0–9).
+
+3. **Training**:
+   - Forward pass: computes predictions.
+   - Loss computation using cross-entropy.
+   - Backward pass: gradients calculated and optimizer updates weights.
+
+4. **Evaluation**:
+   - Computes test accuracy using predictions from the model and actual labels.
+
+Potential real-life use cases:
+- Optical character recognition (OCR) in postal automation or bank cheque reading.
+- Digit recognition in calculators or smart pens.
+- Intelligent tutoring systems for handwritten math inputs.
+- CAPTCHA solvers for digit-based verifications.
+
+Sample input/output scenario:
+- Input: 28x28 grayscale image of a handwritten "3"
+- Preprocessed and passed through CNN layers
+- Output: Tensor of shape [10] with scores for each digit class
+  Example: `[0.01, 0.05, 0.02, 0.92, 0.01, 0.00, 0.01, 0.01, 0.02, 0.01]`
+- Predicted class: 3 (highest probability score)
+"""
