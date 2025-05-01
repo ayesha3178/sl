@@ -33,3 +33,50 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
 model.fit(x_train, y_train, epochs=3, batch_size=64, validation_split=0.1)
 test_loss, test_acc = model.evaluate(x_test, y_test)
 print("TensorFlow Low-Level Test Accuracy:", test_acc)
+
+"""
+Theory Explanation:
+
+What the program does:
+This program builds a convolutional neural network (CNN) using a subclassed TensorFlow Keras model (`tf.keras.Model`) to classify handwritten digits from the MNIST dataset. It uses low-level API constructs for greater flexibility and structure.
+
+What data structures are used and why:
+- NumPy arrays: To represent the image and label datasets, allowing efficient numerical operations.
+- TensorFlow tensors: For input and intermediate data flow through the model layers.
+- One-hot encoded arrays: For categorical labels compatible with the softmax activation and categorical cross-entropy loss.
+- Custom class `MyModel`: Used for more control over model architecture and behavior by defining the layers and the forward pass (`call` method).
+
+The key operations of the program:
+1. **Data loading and preprocessing**:
+   - Loads training and test data using `mnist.load_data()`.
+   - Adds a channel dimension and scales pixel values to [0, 1].
+   - Converts labels into one-hot encoded vectors.
+
+2. **Model definition**:
+   - Uses `tf.keras.Model` subclassing to create a CNN with:
+     - Two convolutional layers for feature extraction.
+     - Two max-pooling layers to downsample feature maps.
+     - Flatten layer to convert 2D to 1D.
+     - Two dense layers for classification, ending with softmax activation.
+
+3. **Model training and evaluation**:
+   - Compiles the model with the Adam optimizer and categorical cross-entropy loss.
+   - Trains the model for 3 epochs on a subset of training data (with 10% used for validation).
+   - Evaluates and prints test accuracy on unseen data.
+
+Potential real-life use cases:
+- Real-time handwritten digit recognition in digital forms.
+- Automatic ZIP code detection in postal systems.
+- Digit classification in touchscreen digit input systems for visually impaired interfaces.
+- Smart board or educational tools for digit learning and practice.
+
+A sample input/output scenario with an explanation:
+- Input: A grayscale image (28x28) of a handwritten '7'.
+- Preprocessed into a shape of (28, 28, 1) and normalized.
+- Forward pass:
+  - Conv and pool layers detect features (e.g., lines and curves).
+  - Dense layers decide on digit class based on extracted patterns.
+- Output: A 10-element probability vector, e.g.,
+  `[0.00, 0.01, 0.02, 0.00, 0.00, 0.00, 0.00, 0.95, 0.01, 0.01]`
+- Interpretation: Model predicts digit '7' with 95% confidence.
+"""
