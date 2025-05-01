@@ -1,4 +1,3 @@
-
 import numpy as np
 
 
@@ -49,3 +48,44 @@ print("Recalled pattern:", result)
 # Verify weight matrix
 print("\nWeight matrix:")
 print(hn.weights)
+
+"""
+Theory Explanation:
+
+What the program does:
+The program implements a **Hopfield Network**, a type of recurrent neural network (RNN) that is used for pattern recognition and associative memory. 
+The network learns a set of binary patterns and can later recall these patterns from noisy or partial inputs. The program utilizes **Hebbian learning**, where the weights between neurons are adjusted based on the correlation between the neurons' activations.
+
+Key operations of the program:
+1. **Initialization**:
+   - A Hopfield Network is created with a given size (number of neurons).
+   - The weight matrix is initialized as a zero matrix.
+
+2. **Training**:
+   - The network is trained using a set of binary patterns, with each pattern passed through the network.
+   - For each pattern, the weight matrix is updated using the **Hebbian learning rule**, which states that the connection strength (weights) between two neurons is incremented based on the outer product of their activations.
+   - Diagonal elements of the weight matrix are set to zero to avoid self-connections.
+
+3. **Recall**:
+   - A noisy or partial input pattern is presented to the network.
+   - The network recalls the closest stored pattern by asynchronously updating each neuron's state, based on the current state of other neurons and their connections (weights).
+   - The recall process continues until the network converges, i.e., when the pattern no longer changes.
+
+4. **Weight Matrix**:
+   - The weight matrix is printed after training to show the learned connections between neurons.
+
+Potential real-life use cases:
+- **Error correction**: The Hopfield network can recall a stored pattern even if it has some noise or corruption, making it useful for error correction in communication systems.
+- **Pattern recognition**: It can be used for recognizing and recalling patterns from noisy inputs, such as in image recognition or speech recognition systems.
+- **Associative memory**: It can store and retrieve associations between different patterns.
+
+Sample input/output scenario with explanation:
+Input:
+    [1, -1, 1, 1]  (a noisy version of the first pattern)
+
+Expected Output:
+    [1, 1, 1, 1]  (the network should recall the closest stored pattern, which is the first pattern)
+
+Explanation:
+The network is trained with four orthogonal binary vectors. When presented with a noisy input pattern (which is a noisy version of the first pattern), the Hopfield network recalls the closest stored pattern. After the recall process, the network should converge to the correct pattern, which in this case is `[1, 1, 1, 1]`.
+"""
