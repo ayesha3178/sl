@@ -56,3 +56,42 @@ test_output = np.array([1, -1])
 retrieved_input = bam.recall(test_output, direction="backward")
 
 print("\nRecalled Input for output {}: {}".format(test_output, retrieved_input))
+
+"""
+Theory Explanation:
+
+What the program does:
+This program implements a Bidirectional Associative Memory (BAM) neural network model using bipolar vectors. BAM is a type of recurrent neural network used for storing and retrieving associated pattern pairs. The network can recall an output from a given input, or recall an input from a given output — hence, bidirectional recall.
+
+The key operations of the program:
+1. **Weight Matrix Initialization**: The BAM class initializes a weight matrix with zeros based on the dimensions of the input and output vectors.
+2. **Training**:
+   - For each pair of input and output vectors, the outer product is calculated.
+   - These outer products are summed to form the final weight matrix used for recall.
+3. **Recall**:
+   - In forward recall, the input pattern is multiplied with the weight matrix to produce the associated output.
+   - In backward recall, the output pattern is multiplied with the transposed weight matrix to retrieve the associated input.
+   - `np.sign` is used to ensure bipolar output (-1 or 1).
+
+Potential real-life use cases:
+- Memory models in cognitive science that simulate associative recall.
+- Applications in pattern recognition and associative data retrieval.
+- Restoration of corrupted patterns in images or text.
+- Bi-directional translation systems where one set of patterns maps to another, e.g., translating symbols.
+
+A sample input/output scenario with an explanation:
+- Training Pairs:
+    Input Pattern 1: [1, -1, 1]
+    Output Pattern 1: [1, -1]
+    Input Pattern 2: [-1, 1, -1]
+    Output Pattern 2: [-1, 1]
+- After training, the weight matrix is computed.
+- Recall Example (Forward):
+    Input: [1, -1, 1]
+    Output: [1, -1] (retrieved via matrix multiplication and sign function)
+- Recall Example (Backward):
+    Output: [1, -1]
+    Input: [1, -1, 1] (retrieved by reversing the process)
+
+This confirms the BAM's ability to learn and retrieve associations bidirectionally.
+"""
