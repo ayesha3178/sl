@@ -28,3 +28,52 @@ model.fit(x_train, y_train, epochs=3, batch_size=64, validation_split=0.1)
 # Evaluate
 loss, accuracy = model.evaluate(x_test, y_test)
 print("Keras Test Accuracy:", accuracy)
+
+
+"""
+Theory Explanation:
+
+What the program does:
+This program uses TensorFlow and Keras to build and train a Convolutional Neural Network (CNN) for classifying handwritten digits from the MNIST dataset.
+
+What data structures are used and why:
+- `numpy.ndarray`: Used for storing image and label data in matrix form.
+- `Sequential`: Keras' linear stack of layers model, ideal for simple feedforward networks.
+- `Conv2D`, `MaxPooling2D`, `Flatten`, `Dense`: Essential building blocks for CNNs.
+- `to_categorical`: Converts integer labels (0–9) into one-hot encoded vectors for multiclass classification.
+
+The key operations of the program:
+1. **Data Loading & Preprocessing**:
+   - Loads the MNIST dataset.
+   - Reshapes grayscale images to include a channel dimension: `(28, 28, 1)`.
+   - Normalizes pixel values to the range [0, 1].
+   - Converts class labels to one-hot encoded vectors.
+
+2. **Model Building**:
+   - Two convolutional layers for feature extraction.
+   - Two max pooling layers for downsampling.
+   - Flatten layer to convert 2D feature maps to 1D.
+   - Dense layer with 128 neurons for learning complex patterns.
+   - Output Dense layer with 10 neurons (one per digit) using softmax for classification.
+
+3. **Training**:
+   - Uses Adam optimizer for efficient training.
+   - Categorical crossentropy as loss function, suitable for multiclass classification.
+   - Trained for 3 epochs with batch size 64 and 10% of data for validation.
+
+4. **Evaluation**:
+   - Computes accuracy on unseen test data to measure generalization performance.
+
+Potential real-life use cases:
+- Handwritten digit recognition in postal systems or banking.
+- Digit-based CAPTCHA solvers.
+- Mobile handwriting input applications.
+- Real-time digit recognition in embedded systems (e.g. Arduino + TensorFlow Lite).
+
+Sample Input/Output Scenario:
+- Input: An image of a handwritten digit '7' with shape (28, 28, 1)
+- Output: A probability distribution like:
+  `[0.01, 0.02, 0.00, 0.00, 0.05, 0.00, 0.01, 0.89, 0.01, 0.01]`
+- Predicted class: 7 (maximum probability)
+"""
+
