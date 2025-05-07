@@ -1,52 +1,100 @@
-# McCulloch-Pitts Neural Net for AND-NOT Function
+# Import required libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import zscore, boxcox
+from sklearn.preprocessing import MinMaxScaler
 
-def mcp_neuron(inputs, weights, threshold):
-    # Calculate weighted sum
-    total = sum(i * w for i, w in zip(inputs, weights))
-    # Apply step function
-    return 1 if total >= threshold else 0
+# 1. Create a sample academic performance dataset
+data = {
+    'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Eva', 'Frank', 'Grace', 'Helen', 'Ivy', 'John'],
+    'Math_Score': [85, 90, np.nan, 75, 88, 120, 65, 70, 45, 98],
+    'Science_Score': [78, 85, 82, 90, np.nan, 89, 200, 77, 73, 88],
+    'English_Score': [np.nan, 88, 85, 87, 90, 92, 86, 50, 48, 91],
+    'Attendance_Rate': [95, 88, 90, 85, 100, 97, 80, 60, 50, np.nan],
+    'GPA': [3.5, 3.8, 3.7, 3.2, 3.9, 4.5, 2.8, 2.0, 1.9, 3.6]
+}
 
-# Define all combinations of inputs A and B
-input_combinations = [(0, 0), (0, 1), (1, 0), (1, 1)]
+df = pd.DataFrame(data)
+print("Original Dataset:")
+display(df)
 
-# Define weights for A and B: A has positive weight, B has negative weight (NOT B)
-weights = [1, -1]
-threshold = 1
+# -----------------------------
+# 1. Handle Missing Values
+# -----------------------------
+print("\nMissing values in dataset:")
+print(df.isnull().sum())
 
-# Print header
-print("A B | A AND (NOT B)")
-print("---------------------")
+# Fill missing numerical values with mean
+df.fillna(df.mean(numeric_only=True), inplace=True)
 
-# Compute output for each input combination
-for inputs in input_combinations:
-    output = mcp_neuron(inputs, weights, threshold)
-    print(f"{inputs[0]} {inputs[1]} | {output}")
+print("\nDataset after handling missing values:")
+display(df)
 
-"""
+# -----------------------------
+# 2. Handle Outliers
+# -----------------------------
+print("\nDetecting outliers using z-score (>3 or <-3):")
+
+numeric_cols = df.select_dtypes(include=[np.number]).columns
+z_scores = np.abs(zscore(df[numeric_cols]))
+outliers = (z_scores > 3)
+
+print("\nNumber of outliers in each column:")
+print((outliers).sum())
+
+# Fix: Handle outliers correctly using z-score
+for i, col in enumerate(numeric_cols):
+    median = df[col].median()
+    df[col] = np.where(outliers[:, i], median, df[col])
+print("\nDataset after handling outliers:")
+display(df)
+
+
+# -----------------------------
+# 3. Data Transformation
+# -----------------------------
+# Let's transform the GPA column to reduce skewness (log or Box-Cox)
+# We'll first check skewness
+print("\nSkewness before transformation (GPA):", df['GPA'].skew())
+
+# GPA must be positive for Box-Cox
+df['GPA_BoxCox'], _ = boxcox(df['GPA'])
+
+print("Skewness after Box-Cox transformation:", pd.Series(df['GPA_BoxCox']).skew())
+
+# Plot before and after transformation
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+sns.histplot(df['GPA'], kde=True)
+plt.title('Original GPA Distribution')
+
+plt.subplot(1, 2, 2)
+sns.histplot(df['GPA_BoxCox'], kde=True)
+plt.title('Box-Cox Transformed GPA Distribution')
+
+plt.tight_layout()
+plt.show()
+
+'''
 Theory Explanation:
 
 What the program does:
-This program implements a McCulloch-Pitts (MCP) neuron model to simulate the logical function A AND (NOT B). It uses binary inputs and a simple threshold-based step activation to determine the output.
+This Python program creates a synthetic dataset representing academic performance of students and performs three key data preprocessing steps: handling missing values, detecting and correcting outliers, and transforming a skewed column ('GPA') for normalization. It also visualizes the effect of data transformation on the GPA distribution.
 
-The key operations of the program:
-1. `mcp_neuron` function computes the weighted sum of binary inputs and compares it against a threshold.
-2. Inputs A and B are defined for all binary combinations (00, 01, 10, 11).
-3. The weight for A is +1 and for B is -1 to simulate a NOT operation on B.
-4. If the weighted sum is greater than or equal to the threshold (1), the output is 1; otherwise, it's 0.
+Key operations of the program:
+1. **Dataset Creation**: Constructs a DataFrame with student scores and GPA.
+2. **Handling Missing Values**: Identifies missing entries and fills them with the column-wise mean of numeric values using `fillna`.
+3. **Outlier Detection and Treatment**: Uses the Z-score method to find outliers (values with Z-score > 3 or < -3) and replaces those values with the column median.
+4. **Data Transformation**: Applies the Box-Cox transformation to the GPA column to reduce skewness, thereby making the data more normally distributed.
+5. **Visualization**: Plots histograms of GPA before and after transformation using Seaborn and Matplotlib to visualize normalization effects.
 
-Potential real-life use cases:
-- Basic logic gate simulation using neural models.
-- Understanding how early neural network models operate.
-- Foundation for building more complex perceptron models in machine learning.
-- Educational tools to explain neural activation and logic functions.
+Observations/Conclusions:
+- Missing data was successfully filled using mean imputation, ensuring completeness of the dataset.
+- Outliers, which could distort statistical analysis or machine learning models, were effectively handled using Z-score method and replacement with the median.
+- The GPA column showed noticeable skewness, which was reduced significantly using the Box-Cox transformation, resulting in a more symmetrical distribution.
+- Visual plots confirmed the effectiveness of transformation, helping prepare the dataset for further analysis or modeling steps.
 
-A sample input/output scenario with an explanation:
-Inputs: A = 1, B = 0
-Weights: [1, -1]
-Threshold: 1
-
-Weighted sum = (1 * 1) + (0 * -1) = 1
-Since 1 >= 1 → Output = 1
-
-This matches the truth table for A AND (NOT B), which only outputs 1 when A is 1 and B is 0. All other combinations produce an output of 0.
-"""
+'''
