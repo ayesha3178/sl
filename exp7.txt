@@ -1,106 +1,78 @@
+import nltk
+import string
 import numpy as np
+import pandas as pd
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk import pos_tag
+from sklearn.feature_extraction.text import TfidfVectorizer
 
-# Sigmoid activation function
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+# Download required NLTK datasets
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
 
-# Derivative of sigmoid function
-def sigmoid_derivative(x):
-    return x * (1 - x)
 
-# XOR input and output
-inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-outputs = np.array([[0], [1], [1], [0]])
+text = """Text analytics is the process of deriving meaningful insights from textual data. 
+It involves techniques such as tokenization, stemming, lemmatization, and TF-IDF. 
+Natural Language Processing (NLP) plays a crucial role in text analytics."""
+tokens = word_tokenize(text)  # Tokenizing words
+print("Tokenized Words:", tokens)
 
-# Seed for reproducibility
-np.random.seed(42)
 
-# Initialize weights and biases
-input_layer_neurons = 2
-hidden_layer_neurons = 2
-output_neurons = 1
+pos_tags = pos_tag(tokens)
+print("POS Tagging:", pos_tags)
+stop_words = set(stopwords.words('english'))
+filtered_tokens = [word for word in tokens if word.lower() not in stop_words and word not in string.punctuation]
+print("After Stop Words Removal:", filtered_tokens)
 
-# Weights and biases
-weights_input_hidden = np.random.uniform(size=(input_layer_neurons, hidden_layer_neurons))
-weights_hidden_output = np.random.uniform(size=(hidden_layer_neurons, output_neurons))
-bias_hidden = np.random.uniform(size=(1, hidden_layer_neurons))
-bias_output = np.random.uniform(size=(1, output_neurons))
 
-# Training parameters
-learning_rate = 0.1
-epochs = 10000
+stemmer = PorterStemmer()
+stemmed_words = [stemmer.stem(word) for word in filtered_tokens]
+print("After Stemming:", stemmed_words)
 
-# Training the network
-for epoch in range(epochs):
-    # Forward pass
-    hidden_layer_activation = np.dot(inputs, weights_input_hidden) + bias_hidden
-    hidden_layer_output = sigmoid(hidden_layer_activation)
-    output_layer_activation = np.dot(hidden_layer_output, weights_hidden_output) + bias_output
-    predicted_output = sigmoid(output_layer_activation)
 
-    # Error calculation
-    error = outputs - predicted_output
+lemmatizer = WordNetLemmatizer()
+lemmatized_words = [lemmatizer.lemmatize(word) for word in filtered_tokens]
+print("After Lemmatization:", lemmatized_words)
 
-    # Backpropagation
-    d_predicted_output = error * sigmoid_derivative(predicted_output)
-    error_hidden_layer = d_predicted_output.dot(weights_hidden_output.T)
-    d_hidden_layer = error_hidden_layer * sigmoid_derivative(hidden_layer_output)
 
-    # Updating weights and biases
-    weights_hidden_output += hidden_layer_output.T.dot(d_predicted_output) * learning_rate
-    bias_output += np.sum(d_predicted_output, axis=0, keepdims=True) * learning_rate
-    weights_input_hidden += inputs.T.dot(d_hidden_layer) * learning_rate
-    bias_hidden += np.sum(d_hidden_layer, axis=0, keepdims=True) * learning_rate
+documents = [
+    "Text analytics is important for deriving insights.",
+    "Natural Language Processing and text analytics help in understanding textual data.",
+    "Tokenization, stemming, and lemmatization are key preprocessing steps in NLP."
+]
 
-# Testing the trained network
-print("Final outputs after training:")
-print(predicted_output.round())
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(documents)
 
-"""
+# Convert matrix to readable format
+tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+
+print("\nTF-IDF Matrix:")
+print(tfidf_df)
+
+'''
 Theory Explanation:
 
 What the program does:
-This Python program implements a simple feedforward neural network with one hidden layer to solve the XOR logic problem.
-It uses the sigmoid activation function and the backpropagation algorithm to train the network to learn the XOR mapping.
+This program demonstrates fundamental techniques in Natural Language Processing (NLP), including tokenization, stop word removal, stemming, lemmatization, part-of-speech (POS) tagging, and TF-IDF vectorization. These are common preprocessing steps for analyzing textual data.
 
-The key operations of the program:
-1. **Network Architecture**:
-   - Input layer: 2 neurons (for the two XOR inputs).
-   - Hidden layer: 2 neurons (with sigmoid activation).
-   - Output layer: 1 neuron (with sigmoid activation to produce a value between 0 and 1).
+Key operations of the program:
+1. **Tokenization**: The input text is split into individual words using NLTK’s `word_tokenize` function.
+2. **POS Tagging**: Each token is assigned a part-of-speech label (e.g., noun, verb) to understand grammatical structure.
+3. **Stop Words Removal**: Commonly used words that do not contribute much meaning (e.g., "the", "is") are filtered out.
+4. **Stemming**: Words are reduced to their root form using the Porter Stemmer (e.g., "processing" → "process").
+5. **Lemmatization**: Words are converted to their base form using the WordNet lemmatizer (e.g., "deriving" → "derive").
+6. **TF-IDF Vectorization**: Three text documents are transformed into numerical representations using Term Frequency–Inverse Document Frequency (TF-IDF), which highlights important terms while down-weighting commonly occurring ones.
 
-2. **Initialization**:
-   - Weights and biases for both layers are initialized randomly.
+Observations/Conclusions:
+- Tokenization and stop word removal help reduce noise in textual data.
+- Stemming and lemmatization are both used to normalize words, though lemmatization is often more accurate linguistically.
+- POS tagging helps in understanding syntactic structures and can be useful in downstream NLP tasks.
+- TF-IDF effectively quantifies the relevance of terms in documents, useful for text classification, clustering, or information retrieval.
+- These preprocessing steps are essential for converting unstructured text into a format suitable for machine learning models and data analysis.
 
-3. **Forward Propagation**:
-   - Computes activations for hidden and output layers using the sigmoid function.
-
-4. **Error Calculation**:
-   - The difference between the actual output and expected XOR output is calculated.
-
-5. **Backpropagation**:
-   - Computes gradients of error with respect to weights using the chain rule.
-   - Updates weights and biases using gradient descent.
-
-6. **Training Loop**:
-   - Repeats forward and backward propagation for 10,000 epochs to reduce the error.
-
-7. **Output**:
-   - After training, the model predicts the XOR outputs which are then printed.
-
-Potential real-life use cases:
-- XOR is a benchmark problem for testing neural networks' ability to learn non-linearly separable functions.
-- Building block for understanding complex classification tasks.
-- Foundation for deep learning models used in tasks like image recognition, language translation, etc.
-
-A sample input/output scenario with an explanation:
-Input : [0, 0] → Output: ~0  
-Input : [0, 1] → Output: ~1  
-Input : [1, 0] → Output: ~1  
-Input : [1, 1] → Output: ~0
-
-Explanation:
-The XOR function returns 1 when only one of the inputs is 1, and 0 otherwise.
-The trained network learns this behavior by adjusting the weights and biases during training,
-so that the final predicted outputs match the XOR truth table closely.
-"""
+'''
