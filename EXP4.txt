@@ -1,61 +1,92 @@
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.datasets import make_blobs
-from sklearn.linear_model import Perceptron
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.datasets import fetch_california_housing  # Alternative dataset
 
-# Step 1: Generate simple linearly separable 2D data
-X, y = make_blobs(n_samples=100, centers=2, n_features=2, random_state=42)
 
-# Step 2: Train a Perceptron
-model = Perceptron(max_iter=1000, eta0=0.1, random_state=42)
-model.fit(X, y)
+# Load the dataset
+california = fetch_california_housing()
 
-# Step 3: Plot decision regions
-def plot_decision_boundary(X, y, model):
-    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
-    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-    xx, yy = np.meshgrid(np.linspace(x_min, x_max, 500),
-                         np.linspace(y_min, y_max, 500))
-    grid = np.c_[xx.ravel(), yy.ravel()]
-    Z = model.predict(grid).reshape(xx.shape)
+# Convert it to a pandas DataFrame
+df = pd.DataFrame(california.data, columns=california.feature_names)
 
-    plt.contourf(xx, yy, Z, alpha=0.4, cmap=plt.cm.RdYlBu)
-    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.RdYlBu, edgecolors='k')
-    plt.title("Perceptron Decision Boundary")
-    plt.xlabel("Feature 1")
-    plt.ylabel("Feature 2")
-    plt.grid(True)
-    plt.show()
+# Add the target variable (house prices)
+df['PRICE'] = california.target
 
-# Step 4: Visualize
-plot_decision_boundary(X, y, model)
+# Display the first few rows
+print(df.head())
 
-"""
+
+
+# Check for missing values
+print(df.isnull().sum())
+
+# Summary statistics
+print(df.describe())
+
+# Visualize correlation between features and target variable
+plt.figure(figsize=(10, 6))
+sns.heatmap(df.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+plt.show()
+
+
+
+# Define features (X) and target variable (y)
+X = df.drop(columns=['PRICE'])
+y = df['PRICE']
+
+# Split data into 80% training and 20% testing
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Create Linear Regression Model
+model = LinearRegression()
+
+# Train the model
+model.fit(X_train, y_train)
+
+# Predict house prices on test data
+y_pred = model.predict(X_test)
+
+# Calculate performance metrics
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+r2 = r2_score(y_test, y_pred)
+
+print(f"Mean Absolute Error: {mae:.2f}")
+print(f"Mean Squared Error: {mse:.2f}")
+print(f"Root Mean Squared Error: {rmse:.2f}")
+print(f"R-squared Score: {r2:.2f}")
+
+plt.figure(figsize=(8, 6))
+plt.scatter(y_test, y_pred, alpha=0.7, color='blue')
+plt.xlabel("Actual Prices")
+plt.ylabel("Predicted Prices")
+plt.title("Actual Prices vs Predicted Prices")
+plt.show()
+
+'''
 Theory Explanation:
 
 What the program does:
-This program generates a 2D linearly separable dataset and uses the Perceptron algorithm from scikit-learn to classify the data points. After training, it visualizes the decision boundary that the Perceptron has learned.
+This Python program builds a simple linear regression model to predict housing prices using the California Housing dataset. It involves loading the dataset, preprocessing, visualizing correlations, training a regression model, and evaluating the model's performance using key metrics and visualization.
 
-The key operations of the program:
-1. **Data Generation**: The `make_blobs()` function generates 100 two-dimensional points grouped into two separate clusters (classes).
-2. **Model Training**: A `Perceptron` classifier is trained on the generated dataset. The perceptron learns a linear decision boundary that separates the two classes.
-3. **Decision Boundary Plotting**:
-   - A grid of points covering the feature space is created using `np.meshgrid`.
-   - The trained model is used to predict the class for each point in the grid.
-   - The decision surface is plotted using `contourf` and the training data points are overlaid using `scatter`.
+Key operations of the program:
+1. **Data Loading and Preparation**: The dataset is fetched using `fetch_california_housing()` and converted into a pandas DataFrame. The target variable (house price) is added as a new column.
+2. **Data Exploration**: The program checks for missing values, displays summary statistics, and visualizes the correlation matrix using a heatmap to understand feature relationships.
+3. **Data Splitting**: Features (X) and target (y) are separated. The dataset is split into training and test sets using an 80-20 ratio.
+4. **Model Training**: A linear regression model is created and trained using the training data.
+5. **Prediction and Evaluation**: Predictions are made on the test set, and the model's accuracy is assessed using MAE, MSE, RMSE, and R² score.
+6. **Visualization**: A scatter plot of actual vs predicted prices is plotted to visually assess model performance.
 
-Potential real-life use cases:
-- Demonstrates how a basic linear classifier works for binary classification.
-- Useful for teaching fundamental concepts in machine learning such as linear separability, decision boundaries, and perceptron learning.
-- Can be extended to feature-rich real-world problems like email spam detection, credit risk analysis, or medical diagnosis (where features are linearly separable).
+Observations/Conclusions:
+- The dataset had no missing values, allowing smooth model training.
+- The heatmap shows how strongly each feature correlates with housing prices, which helps in understanding influential predictors.
+- Linear regression provides a baseline model. The R² score gives an idea of how well the model explains the variability of the target.
+- Visualization of actual vs predicted prices helps in identifying model bias or spread of residuals.
+- While linear regression is easy to interpret, its performance may be limited if the data has nonlinear patterns or outliers.
 
-A sample input/output scenario with an explanation:
-- Input: 2D feature vectors for each sample, e.g., [2.5, 4.1], [1.0, 1.2], etc.
-- Output: Predicted class label (0 or 1) based on which side of the decision boundary the point lies.
-- Example: Suppose the decision boundary line separates data into Class 0 (left region) and Class 1 (right region). Any test point's location relative to the boundary determines its classification.
-
-The resulting plot shows:
-- The background color-coded decision regions for each class.
-- The actual data points, colored according to their true class.
-- A clear visual indication of how well the perceptron has separated the data.
-"""
+'''
