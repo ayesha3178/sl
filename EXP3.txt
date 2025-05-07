@@ -1,86 +1,43 @@
-import numpy as np
+import pandas as pd
 
-# Step 1: Create ASCII binary inputs for digits 0-9
-def to_ascii_binary(char):
-    return list(map(int, format(ord(char), '07b')))
+# Load the iris.csv dataset
+df = pd.read_csv("iris.csv")
+print(df.columns)
+# 1. Summary Statistics (Grouped by Species)
+print("1. Summary Statistics (Grouped by Species):\n")
+grouped_stats = df.groupby('Species').describe()
+print(grouped_stats)
+species_numeric_lists = {}
+for species in df['Species'].unique():
+    species_df = df[df['Species'] == species].drop(columns='Species')
+    species_numeric_lists[species] = species_df.values.tolist()
 
-# Digits 0 to 9 in ASCII
-digits = [str(i) for i in range(10)]
-X = np.array([to_ascii_binary(d) for d in digits])  # shape: (10, 7)
+print("\nList of numeric values for each Species:")
+for species, values in species_numeric_lists.items():
+    print(f"\n{species}:\n{values[:5]} ...")
+print("\n\n2. Basic Statistical Details for Each Species:\n")
+for Species in df['Species'].unique():
+    print(f"--- {Species} ---")
+    Species_data = df[df['Species'] == Species].drop(columns='Species')
+    print(Species_data.describe(percentiles=[.25, .5, .75]))
+    print("\n")
 
-# Step 2: Define labels (0 for even, 1 for odd)
-y = np.array([int(d) % 2 for d in digits])  # 0 for even, 1 for odd
-
-# Step 3: Perceptron training
-def train_perceptron(X, y, lr=0.1, epochs=10):
-    weights = np.zeros(X.shape[1])
-    bias = 0
-
-    for epoch in range(epochs):
-        for xi, target in zip(X, y):
-            linear_output = np.dot(xi, weights) + bias
-            prediction = 1 if linear_output >= 0 else 0
-            error = target - prediction
-            weights += lr * error * xi
-            bias += lr * error
-    return weights, bias
-
-# Train the perceptron
-weights, bias = train_perceptron(X, y)
-
-# Step 4: Test the perceptron
-def predict(x, weights, bias):
-    return 1 if np.dot(x, weights) + bias >= 0 else 0
-
-print("Digit | Prediction (0=Even, 1=Odd)")
-
-for i, xi in enumerate(X):
-    result = predict(xi, weights, bias)
-    print(f"  {i}   |      {result}")
-
-"""
+'''
 Theory Explanation:
 
 What the program does:
-This program implements a simple perceptron model to classify whether a given digit (0-9) is even or odd.
-Instead of using numeric values directly, it encodes each digit as a 7-bit ASCII binary vector, trains the perceptron on these vectors, and uses it to predict parity (even = 0, odd = 1).
+This program performs statistical analysis on the Iris dataset by grouping the data based on species. It calculates and displays summary statistics for each species and organizes the numeric data values into species-specific lists.
 
-The key operations of the program:
-1. **ASCII Binary Encoding**: Each digit (e.g., '0', '1', ..., '9') is converted to its 7-bit ASCII binary representation using the `to_ascii_binary()` function.
-2. **Labeling**: Each digit is labeled as 0 (even) or 1 (odd) based on its numeric value.
-3. **Perceptron Training**:
-   - Initialized with zero weights and bias.
-   - Trained over multiple epochs using the perceptron learning rule.
-   - Updates weights and bias based on prediction errors.
-4. **Prediction**: After training, the perceptron predicts for each digit whether it's even or odd by applying the learned weights and bias.
+Key operations of the program:
+1. **Data Loading**: Loads the Iris dataset from a CSV file using pandas.
+2. **Grouped Summary Statistics**: Uses `groupby()` and `describe()` to generate summary statistics (like mean, std, min, max, and percentiles) for each species.
+3. **Data Extraction by Species**: Extracts the numeric data for each species and stores it as a list of lists in a dictionary, enabling easy access to raw values.
+4. **Individual Species Statistics**: For each unique species, the program uses `describe()` again on the subset data to provide a more focused statistical summary including quartiles.
 
-Potential real-life use cases:
-- Demonstrates how simple binary representations can be used as inputs for machine learning models.
-- Useful for teaching basic supervised learning and perceptron behavior.
-- Can be extended to more complex classification problems such as character recognition or binary decision tasks.
-- Good foundational example for students beginning with neural networks or AI.
+Observations/Conclusions:
+- The use of `groupby()` and `describe()` is efficient for getting grouped statistics, which is crucial when comparing different classes or labels in a dataset.
+- By removing the 'Species' column and storing only numerical values, the program prepares clean subsets for each species that could be useful for plotting, modeling, or further analysis.
+- Displaying the first few records of each species gives a quick peek into the distribution and helps identify potential differences in measurements like petal length or sepal width.
+- Such analysis is important in understanding data distribution patterns and variability among different categories, especially in classification tasks.
 
-A sample input/output scenario with an explanation:
-- Input Digit: '3'
-- ASCII Binary: '3' has an ASCII code of 51 → binary: 110011
-- 7-bit padded version: 0110011
-- This vector is used as input to the perceptron.
-- Label for '3': 1 (odd)
-- After training, the perceptron computes a weighted sum of the binary bits plus bias.
-- If the sum is >= 0, it predicts 1 (odd); otherwise, 0 (even).
-
-Sample Output:
-Digit | Prediction (0=Even, 1=Odd)
-  0   |      0
-  1   |      1
-  2   |      0
-  3   |      1
-  4   |      0
-  5   |      1
-  6   |      0
-  7   |      1
-  8   |      0
-  9   |      1
-
-This shows that the perceptron has successfully learned to distinguish even and odd digits based on their ASCII binary encodings.
-"""
+'''
