@@ -1,91 +1,76 @@
-import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
+# Load the Iris dataset from seaborn
+df = sns.load_dataset('iris')
 
-class HopfieldNetwork:
-    def __init__(self, size):
-        self.size = size
-        self.weights = np.zeros((size, size))
+# 1. List down the features and their types
+print("First 5 rows of the dataset:")
+print(df.head())
 
-    def train(self, patterns):
-        """Train the network using Hebbian learning rule"""
-        for pattern in patterns:
-            self.weights += np.outer(pattern, pattern)
-        np.fill_diagonal(self.weights, 0)  # Remove self-connections
-        self.weights /= self.size  # Normalize by number of neurons
+print("\nFeature Types:")
+print(df.dtypes)
 
-    def recall(self, pattern, max_iter=100):
-        """Asynchronous pattern recall with random update order"""
-        pattern = pattern.copy()
-        for _ in range(max_iter):
-            prev_pattern = pattern.copy()
-            # Update neurons in random order
-            for i in np.random.permutation(self.size):
-                activation = np.dot(self.weights[i], pattern)
-                pattern[i] = 1 if activation >= 0 else -1
-            if np.allclose(pattern, prev_pattern):
-                break  # Converged
-        return pattern
+# 2. Create a histogram for each feature in the dataset
+df.hist(bins=15, figsize=(10, 6), layout=(2, 2), color='skyblue', edgecolor='black')
+plt.suptitle("Histogram of Each Numeric Feature")
+plt.tight_layout()
+plt.show()
 
+# 3. Create a boxplot for each feature in the dataset
+numeric_columns = df.select_dtypes(include='number').columns
 
-# Define 4 orthogonal vectors (size 4)
-vectors = [
-    np.array([1, 1, 1, 1]),
-    np.array([1, -1, 1, -1]),
-    np.array([1, 1, -1, -1]),
-    np.array([1, -1, -1, 1])
-]
+plt.figure(figsize=(12, 6))
+for i, col in enumerate(numeric_columns, 1):
+    plt.subplot(1, 4, i)
+    sns.boxplot(y=df[col], color='lightcoral')
+    plt.title(f'Boxplot of {col}')
+plt.tight_layout()
+plt.show()
 
-# Create and train network
-hn = HopfieldNetwork(size=4)
-hn.train(vectors)
+# 4. Inference from distributions and outliers
+print("\n=== Inference ===")
+print("""
+- Features:
+  - sepal_length (numeric)
+  - sepal_width (numeric)
+  - petal_length (numeric)
+  - petal_width (numeric)
+  - species (nominal)
 
-# Test recall with noisy input
-test_pattern = np.array([1, -1, 1, 1])  # Noisy version of first pattern
-print("Input pattern:", test_pattern)
-result = hn.recall(test_pattern)
-print("Recalled pattern:", result)
+- Outliers:
+  - 'sepal_width' shows some outliers (visible in boxplot).
+  - Other features show relatively normal distribution.
 
-# Verify weight matrix
-print("\nWeight matrix:")
-print(hn.weights)
+- Distribution:
+  - 'petal_length' and 'petal_width' show clear separation based on species.
+  - 'sepal_width' has more variability and slight skewness.
+""")
 
 """
 Theory Explanation:
 
 What the program does:
-The program implements a **Hopfield Network**, a type of recurrent neural network (RNN) that is used for pattern recognition and associative memory. 
-The network learns a set of binary patterns and can later recall these patterns from noisy or partial inputs. The program utilizes **Hebbian learning**, where the weights between neurons are adjusted based on the correlation between the neurons' activations.
+This program performs exploratory data analysis (EDA) on the Iris dataset using several visualizations, such as histograms and boxplots, to explore the distributions of numeric features and to detect any outliers or trends.
 
 Key operations of the program:
-1. **Initialization**:
-   - A Hopfield Network is created with a given size (number of neurons).
-   - The weight matrix is initialized as a zero matrix.
+1. **Data Loading**: The Iris dataset is loaded from Seaborn's built-in datasets.
+2. **Feature Listing and Type Checking**: The program prints out the first 5 rows of the dataset and lists the data types of each feature (column).
+3. **Histograms**: Histograms are created for each numeric feature to visualize the distribution of the features.
+4. **Boxplots**: Boxplots are generated for each numeric feature to assess the distribution and detect outliers.
+5. **Inference**: The program provides an interpretation of the observed distributions and any potential outliers based on the histograms and boxplots.
 
-2. **Training**:
-   - The network is trained using a set of binary patterns, with each pattern passed through the network.
-   - For each pattern, the weight matrix is updated using the **Hebbian learning rule**, which states that the connection strength (weights) between two neurons is incremented based on the outer product of their activations.
-   - Diagonal elements of the weight matrix are set to zero to avoid self-connections.
-
-3. **Recall**:
-   - A noisy or partial input pattern is presented to the network.
-   - The network recalls the closest stored pattern by asynchronously updating each neuron's state, based on the current state of other neurons and their connections (weights).
-   - The recall process continues until the network converges, i.e., when the pattern no longer changes.
-
-4. **Weight Matrix**:
-   - The weight matrix is printed after training to show the learned connections between neurons.
-
-Potential real-life use cases:
-- **Error correction**: The Hopfield network can recall a stored pattern even if it has some noise or corruption, making it useful for error correction in communication systems.
-- **Pattern recognition**: It can be used for recognizing and recalling patterns from noisy inputs, such as in image recognition or speech recognition systems.
-- **Associative memory**: It can store and retrieve associations between different patterns.
-
-Sample input/output scenario with explanation:
-Input:
-    [1, -1, 1, 1]  (a noisy version of the first pattern)
-
-Expected Output:
-    [1, 1, 1, 1]  (the network should recall the closest stored pattern, which is the first pattern)
-
-Explanation:
-The network is trained with four orthogonal binary vectors. When presented with a noisy input pattern (which is a noisy version of the first pattern), the Hopfield network recalls the closest stored pattern. After the recall process, the network should converge to the correct pattern, which in this case is `[1, 1, 1, 1]`.
+Observations/Conclusions:
+- **Feature Types**: The dataset contains four numeric features (`sepal_length`, `sepal_width`, `petal_length`, and `petal_width`) and one categorical feature (`species`).
+- **Histograms**:
+  - All numeric features have somewhat normal or unimodal distributions, with some variance in spread.
+  - `petal_length` and `petal_width` exhibit a clearer separation between species, which suggests their significance in classification tasks.
+- **Boxplots**:
+  - The `sepal_width` feature displays some noticeable outliers (values outside the whiskers), which should be investigated for potential data quality issues or special cases.
+  - Other features show relatively few outliers.
+- **Overall Inferences**:
+  - `petal_length` and `petal_width` exhibit better separation across the species, making them more useful for classification.
+  - `sepal_width` has more variability and some skewness, which might require transformation for certain analysis methods.
+  - The dataset seems relatively clean, with few outliers and generally well-behaved distributions, making it a good candidate for classification tasks.
 """
