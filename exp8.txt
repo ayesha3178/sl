@@ -1,101 +1,56 @@
-import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-class ART1:
-    def __init__(self, input_size, vigilance=0.8):
-        self.input_size = input_size
-        self.vigilance = vigilance
-        self.weights = []
-        self.clusters = []
+# Load the built-in Titanic dataset
+titanic = sns.load_dataset('titanic')
 
-    def match(self, input_vector, weight):
-        min_vector = np.minimum(input_vector, weight)
-        return np.sum(min_vector) / np.sum(input_vector)
+# Display the first few rows of the dataset
+print("Titanic Dataset Preview:")
+print(titanic.head())
 
-    def train(self, data):
-        for vector in data:
-            found_cluster = False
-            for i, weight in enumerate(self.weights):
-                if self.match(vector, weight) >= self.vigilance:
-                    # Update rule (intersection)
-                    self.weights[i] = np.minimum(weight, vector)
-                    self.clusters[i].append(vector)
-                    found_cluster = True
-                    break
+# Part 1: Check for patterns in the data
+# Example: Survival rate by gender using a countplot
+plt.figure(figsize=(8, 5))
+sns.countplot(x='sex', hue='survived', data=titanic)
+plt.title("Survival Count by Gender")
+plt.xlabel("Gender")
+plt.ylabel("Count")
+plt.legend(title="Survived", labels=["No", "Yes"])
+plt.show()
 
-            if not found_cluster:
-                # Create new cluster
-                self.weights.append(np.copy(vector))
-                self.clusters.append([vector])
+# Example: Class distribution vs survival
+plt.figure(figsize=(8, 5))
+sns.countplot(x='class', hue='survived', data=titanic)
+plt.title("Survival Count by Passenger Class")
+plt.xlabel("Passenger Class")
+plt.ylabel("Count")
+plt.legend(title="Survived", labels=["No", "Yes"])
+plt.show()
 
-    def print_clusters(self):
-        for i, cluster in enumerate(self.clusters):
-            print(f"\nCluster {i+1}:")
-            for vec in cluster:
-                print(vec)
+# Part 2: Histogram of Ticket Fare Distribution
+plt.figure(figsize=(8, 5))
+sns.histplot(data=titanic, x='fare', bins=30, kde=True)
+plt.title("Distribution of Ticket Fare")
+plt.xlabel("Fare")
+plt.ylabel("Number of Passengers")
+plt.show()
 
-
-# Example binary input vectors
-input_data = np.array([
-    [1, 0, 0, 1, 0, 1],
-    [1, 1, 0, 1, 0, 1],
-    [0, 0, 1, 0, 1, 0],
-    [0, 0, 1, 0, 1, 1],
-    [1, 1, 0, 1, 0, 0]
-])
-
-# Create ART1 network
-art = ART1(input_size=6, vigilance=0.8)
-
-# Train on data
-art.train(input_data)
-
-# Show resulting clusters
-art.print_clusters()
-
-"""
+'''
 Theory Explanation:
 
 What the program does:
-This program implements the ART1 (Adaptive Resonance Theory 1) neural network for unsupervised clustering of binary input data.
-It groups input patterns into clusters based on similarity, using a vigilance parameter to control how strictly inputs must match.
+This program performs exploratory data analysis (EDA) on the Titanic dataset using Seaborn visualizations. It aims to reveal patterns related to passenger survival, gender, class, and ticket fare.
 
-The key operations of the program:
-1. **Initialization**:
-   - Sets the input size and vigilance level.
-   - Initializes empty lists for cluster weights and associated input patterns.
+Key operations of the program:
+1. **Data Loading**: The Titanic dataset is loaded using Seaborn’s built-in function.
+2. **Survival Count by Gender**: A countplot shows how many males and females survived versus did not survive.
+3. **Survival Count by Class**: Another countplot illustrates how survival is distributed among different passenger classes (First, Second, Third).
+4. **Fare Distribution**: A histogram with a KDE line shows how ticket prices are distributed among the passengers.
 
-2. **Matching**:
-   - Compares an input vector with each existing cluster using the fuzzy AND operation.
-   - Computes the match score: ratio of intersection to input vector sum.
-   - Accepts the input into a cluster if the score ≥ vigilance.
+Observations/Conclusions:
+- From the gender-based survival count, it can be observed that **females had a significantly higher survival rate than males**, reflecting the "women and children first" evacuation policy.
+- The class-based survival count reveals that **first-class passengers had the highest survival rate**, while third-class passengers had the lowest.
+- The fare distribution histogram indicates a **right-skewed distribution**, suggesting that most passengers paid lower fares, but a few paid very high amounts.
+- These visual insights are crucial for understanding how different features relate to survival and can guide further predictive modeling or hypothesis testing.
 
-3. **Training**:
-   - If an input matches a cluster, the cluster's weight is updated via intersection (min operation).
-   - If no match is found, a new cluster is created with the input as its prototype.
-
-4. **Output**:
-   - After training, clusters are printed showing how the data was grouped.
-
-Potential real-life use cases:
-- Clustering text documents (converted to binary vectors).
-- Recognizing handwritten binary digits.
-- Binary pattern classification in cognitive modeling.
-- Real-time pattern learning in robotics or adaptive systems.
-
-A sample input/output scenario with explanation:
-Input:
-    [1, 0, 0, 1, 0, 1]  
-    [1, 1, 0, 1, 0, 1]
-    [0, 0, 1, 0, 1, 0]
-    [0, 0, 1, 0, 1, 1]
-    [1, 1, 0, 1, 0, 0]
-
-Clusters might form like:
-    Cluster 1: patterns 1, 2, and 5 (similar structure with high overlap)
-    Cluster 2: patterns 3 and 4 (shared active bits in different positions)
-
-Explanation:
-The ART1 model assigns inputs to clusters only if the match score is above 0.8.
-Patterns with sufficient overlap are grouped; otherwise, new clusters are formed.
-This preserves learned clusters and prevents overwriting—key to stable category learning.
-"""
+'''
