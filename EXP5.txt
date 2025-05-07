@@ -1,97 +1,78 @@
+# Import necessary libraries
+import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
 
+# Load dataset
+data = pd.read_csv('Social_Network_Ads.csv')
 
-class BAM:
+# View the first few rows
+print(data.head())
 
-    def __init__(self, input_size, output_size):
+# Select features and target
+X = data[['Age', 'EstimatedSalary']]  # Independent variables
+y = data['Purchased']                # Target variable (binary)
 
-        self.weights = np.zeros((input_size, output_size))
+# Split into training and testing datasets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
 
-    def train(self, input_patterns, output_patterns):
+# Create and train logistic regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
 
-        for x, y in zip(input_patterns, output_patterns):
-            self.weights += np.outer(x, y)
+# Predict the test set results
+y_pred = model.predict(X_test)
 
-        print("Updated Weight Matrix:\n", self.weights)
+# Confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+TP = cm[1, 1]
+TN = cm[0, 0]
+FP = cm[0, 1]
+FN = cm[1, 0]
 
-    def recall(self, input_pattern, direction="forward"):
+# Compute metrics
+accuracy = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
 
-        if direction == "forward":
+# Print results
+print("Confusion Matrix:")
+print(cm)
+print(f"\nTrue Positives (TP): {TP}")
+print(f"True Negatives (TN): {TN}")
+print(f"False Positives (FP): {FP}")
+print(f"False Negatives (FN): {FN}")
+print(f"\nAccuracy: {accuracy:.2f}")
+print(f"Error Rate: {error_rate:.2f}")
+print(f"Precision: {precision:.2f}")
+print(f"Recall: {recall:.2f}")
 
-            output = np.sign(np.dot(input_pattern, self.weights))
-
-        else:
-
-            output = np.sign(np.dot(input_pattern, self.weights.T))
-
-        return output
-
-    # Define two pairs of bipolar vectors (1 and -1 instead of 0 and 1)
-
-
-input_patterns = np.array([[1, -1, 1], [-1, 1, -1]])
-
-output_patterns = np.array([[1, -1], [-1, 1]])
-
-# Initialize BAM
-
-bam = BAM(input_size=3, output_size=2)
-
-# Train BAM with the given patterns
-
-bam.train(input_patterns, output_patterns)
-
-# Recall from input to output
-
-test_input = np.array([1, -1, 1])
-
-retrieved_output = bam.recall(test_input, direction="forward")
-
-print("\nRecalled Output for input {}: {}".format(test_input, retrieved_output))
-
-# Recall from output to input
-
-test_output = np.array([1, -1])
-
-retrieved_input = bam.recall(test_output, direction="backward")
-
-print("\nRecalled Input for output {}: {}".format(test_output, retrieved_input))
-
-"""
+'''
 Theory Explanation:
 
 What the program does:
-This program implements a Bidirectional Associative Memory (BAM) neural network model using bipolar vectors. BAM is a type of recurrent neural network used for storing and retrieving associated pattern pairs. The network can recall an output from a given input, or recall an input from a given output — hence, bidirectional recall.
+This program performs binary classification using logistic regression on a dataset (`Social_Network_Ads.csv`) to predict whether a user purchased a product based on their age and estimated salary.
 
-The key operations of the program:
-1. **Weight Matrix Initialization**: The BAM class initializes a weight matrix with zeros based on the dimensions of the input and output vectors.
-2. **Training**:
-   - For each pair of input and output vectors, the outer product is calculated.
-   - These outer products are summed to form the final weight matrix used for recall.
-3. **Recall**:
-   - In forward recall, the input pattern is multiplied with the weight matrix to produce the associated output.
-   - In backward recall, the output pattern is multiplied with the transposed weight matrix to retrieve the associated input.
-   - `np.sign` is used to ensure bipolar output (-1 or 1).
+Key operations of the program:
+1. **Data Loading and Preparation**: The dataset is read using pandas, and only two features (`Age`, `EstimatedSalary`) are selected along with the binary target variable (`Purchased`).
+2. **Train-Test Split**: The dataset is split into training (75%) and testing (25%) sets to evaluate model generalization.
+3. **Model Training**: A logistic regression model is created and trained using the training dataset.
+4. **Prediction**: The model makes predictions on the test dataset.
+5. **Confusion Matrix Construction**: The confusion matrix is used to determine the number of true positives, true negatives, false positives, and false negatives.
+6. **Performance Metrics**:
+   - **Accuracy**: Measures overall correctness of the model.
+   - **Error Rate**: The proportion of incorrect predictions.
+   - **Precision**: The ratio of true positives to all positive predictions.
+   - **Recall**: The ratio of true positives to all actual positives.
 
-Potential real-life use cases:
-- Memory models in cognitive science that simulate associative recall.
-- Applications in pattern recognition and associative data retrieval.
-- Restoration of corrupted patterns in images or text.
-- Bi-directional translation systems where one set of patterns maps to another, e.g., translating symbols.
+Observations/Conclusions:
+- Logistic regression is suitable for binary classification problems and provides interpretable results.
+- The confusion matrix provides insight into how the model is performing with respect to both classes.
+- High accuracy may be misleading in imbalanced datasets, hence precision and recall are crucial to evaluate.
+- This model helps businesses predict user behavior based on demographic features, useful for targeted marketing or sales strategies.
 
-A sample input/output scenario with an explanation:
-- Training Pairs:
-    Input Pattern 1: [1, -1, 1]
-    Output Pattern 1: [1, -1]
-    Input Pattern 2: [-1, 1, -1]
-    Output Pattern 2: [-1, 1]
-- After training, the weight matrix is computed.
-- Recall Example (Forward):
-    Input: [1, -1, 1]
-    Output: [1, -1] (retrieved via matrix multiplication and sign function)
-- Recall Example (Backward):
-    Output: [1, -1]
-    Input: [1, -1, 1] (retrieved by reversing the process)
-
-This confirms the BAM's ability to learn and retrieve associations bidirectionally.
-"""
+'''
