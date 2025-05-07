@@ -1,73 +1,64 @@
-import tensorflow as tf
-from tensorflow.keras.datasets import mnist
-from tensorflow.keras.utils import to_categorical
+import org.apache.spark.{SparkConf, SparkContext}
 
-# Load data
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
+object WordCount {
+  def main(args: Array[String]): Unit = {
+    // Create a Spark configuration and context
+    val conf = new SparkConf().setAppName("Simple Word Count").setMaster("local[*]")
+    val sc = new SparkContext(conf)
 
-# Preprocess
-x_train = x_train.reshape(-1, 28, 28, 1).astype('float32') / 255.0
-x_test = x_test.reshape(-1, 28, 28, 1).astype('float32') / 255.0
-y_train = to_categorical(y_train, 10)
-y_test = to_categorical(y_test, 10)
+    // Load a text file (can replace with any path or HDFS path)
+    val textFile = sc.textFile("sample.txt") // Make sure sample.txt exists
 
-# Build CNN model
-model = tf.keras.Sequential([
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(64, activation='relu'),
-    tf.keras.layers.Dense(10, activation='softmax')
-])
+    // Split lines into words, map each word to (word, 1), then reduce by key
+    val wordCounts = textFile
+      .flatMap(line => line.split(" "))
+      .map(word => (word, 1))
+      .reduceByKey(_ + _)
 
-# Compile and train
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-model.fit(x_train, y_train, epochs=5, batch_size=64, validation_split=0.1)
+    // Print the result
+    wordCounts.collect().foreach {
+      case (word, count) => println(s"$word: $count")
+    }
 
-# Evaluate
-test_loss, test_acc = model.evaluate(x_test, y_test)
-print("Test Accuracy:", test_acc)
+    // Stop SparkContext
+    sc.stop()
+  }
+}
 
-"""
+/*
 Theory Explanation:
 
 What the program does:
-This program builds and trains a Convolutional Neural Network (CNN) to classify handwritten digits (0–9) using the MNIST dataset. It processes the images, trains the model using supervised learning, and evaluates its performance on unseen test data.
+This is a simple word count program written in Scala using Apache Spark. It processes a text file by loading it, splitting the lines into words, and counting how often each word appears. The program uses the MapReduce paradigm to process the data and provides an efficient way to count word occurrences, which is useful in various text processing and analytics tasks.
 
-What data structures are used and why:
-- NumPy arrays: Used to store image and label data efficiently.
-- TensorFlow Sequential model: A linear stack of layers ideal for defining a CNN in an intuitive and readable way.
-- One-hot encoded vectors: Labels are converted to one-hot encoding using `to_categorical` to be compatible with the `categorical_crossentropy` loss function.
+Key operations of the program:
+1. **Spark Configuration and Context**:
+   - The `SparkConf` object is created to set up the application’s name and master (which in this case is `local[*]` meaning it runs on the local machine using all available cores).
+   - A `SparkContext` is created using the configuration, which is the entry point for Spark functionality.
+   
+2. **Text File Loading**:
+   - The program loads the text file (`sample.txt`) into an RDD (Resilient Distributed Dataset), which is Spark's primary data structure for parallel processing.
+   
+3. **Transformation**:
+   - `flatMap`: It splits each line into words and flattens the result into a single list of words.
+   - `map`: Each word is mapped to a tuple (word, 1) to represent a key-value pair.
+   - `reduceByKey`: This is a transformation that groups the values by key (word) and reduces them by summing the occurrences of each word.
 
-The key operations of the program:
-1. **Data loading and preprocessing**:
-   - Loads MNIST image and label data.
-   - Reshapes image arrays to include a channel dimension and normalizes pixel values.
-   - Converts integer labels to one-hot encoded format.
+4. **Action**:
+   - `collect`: It retrieves the results from the RDD and brings them to the driver (the local machine in this case).
+   - The results are printed out, showing each word followed by its count.
 
-2. **Model building**:
-   - Two convolutional layers extract features from images.
-   - Two max-pooling layers reduce spatial dimensions.
-   - A flatten layer converts the 2D data into a 1D vector.
-   - Dense layers (including softmax) handle classification into 10 categories.
+5. **Stopping the Spark Context**:
+   - The `sc.stop()` command stops the SparkContext to release resources after the computation is done.
 
-3. **Training and evaluation**:
-   - The model is compiled with the Adam optimizer and categorical cross-entropy loss.
-   - Trained over 5 epochs with a batch size of 64, using 10% of the training data for validation.
-   - Final accuracy is evaluated on the test dataset.
+Observations/Conclusions:
+- **Input**: The input is a text file (in this case, `sample.txt`), where each line can contain multiple words.
+- **Output**: The output is a list of word counts, with each word followed by the number of times it appears in the file.
+  - Example output could look like:
+    - `word1: 5`
+    - `word2: 3`
+    - `word3: 10`
+- **Efficiency**: Spark's parallel processing makes the word count computation efficient even for large datasets. The `reduceByKey` operation ensures that the counting happens in a distributed and parallel manner, leading to better performance on large-scale data.
+- **Scalability**: Although the program runs locally (using `local[*]`), it can easily be adapted to run on a distributed Spark cluster by changing the `setMaster` parameter to a cluster URL, which makes it scalable to large datasets stored in distributed file systems like HDFS.
 
-Potential real-life use cases:
-- Handwriting recognition in postal services or banking (cheque reading).
-- Digit recognition in OCR (Optical Character Recognition) systems.
-- Pattern recognition in robotics or AI-assisted grading systems.
-
-A sample input/output scenario with an explanation:
-- Input: A 28x28 grayscale image of the digit '5' (in pixel values scaled between 0 and 1).
-- The CNN extracts features through convolution and pooling, then classifies the image.
-- Output: A 10-element array from the softmax layer representing probabilities. E.g.,
-  `[0.01, 0.00, 0.00, 0.00, 0.03, 0.95, 0.00, 0.00, 0.00, 0.01]`
-- Interpretation: The model predicts the digit as '5' with 95% confidence.
-
-"""
+*/
