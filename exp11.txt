@@ -1,80 +1,44 @@
-import tensorflow as tf
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-import numpy as np
+from mrjob.job import MRJob
+import re
 
-# Load the dataset
-iris = load_iris()
-X = iris.data
-y = (iris.target == 0).astype(int)  # Binary classification: Setosa vs others
+LOG_PATTERN = r'\[(.?)\] \[(.?)\] \[(.?)\] (.)'
 
-# Preprocess
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+class LogAnalyzer(MRJob):
+    def mapper(self, _, line):
+        match = re.match(LOG_PATTERN, line)
+        if match:
+            timestamp, level, user, message = match.groups()
+            yield (level.strip(), 1)
 
-# Split dataset
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
+    def reducer(self, level, counts):
+        yield (level, sum(counts))
 
-# Build logistic regression model
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Dense(1, activation='sigmoid', input_shape=(4,))
-])
-
-# Compile
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-# Train
-model.fit(X_train, y_train, epochs=50, verbose=0)
-
-# Evaluate
-loss, accuracy = model.evaluate(X_test, y_test)
-print("Logistic Regression Accuracy:", accuracy)
-# Build a simple Neural Network
-nn_model = tf.keras.models.Sequential([
-    tf.keras.layers.Dense(8, activation='relu', input_shape=(4,)),
-    tf.keras.layers.Dense(1, activation='sigmoid')
-])
-
-# Compile
-nn_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-# Train
-nn_model.fit(X_train, y_train, epochs=50, verbose=0)
-
-# Evaluate
-nn_loss, nn_accuracy = nn_model.evaluate(X_test, y_test)
-print("Neural Network Accuracy:", nn_accuracy)
+if __name__ == '__main__':
+    LogAnalyzer.run()
 
 """
 Theory Explanation:
 
 What the program does:
-This Python program compares the performance of two machine learning models—Logistic Regression and a simple Feedforward Neural Network—on a binary classification task using the Iris dataset. The classification is whether a given sample belongs to the 'Setosa' species or not.
+The program is a MapReduce job using the MRJob library to analyze log data. It processes a log file line by line, extracting log levels (such as "INFO", "ERROR", "WARNING", etc.) and counts how many times each level appears. The job then aggregates these counts for each log level.
 
-What data structures are used and why:
-- NumPy arrays: Used to handle numerical data efficiently, such as features and labels.
-- TensorFlow's Sequential model: A linear stack of layers that is ideal for building both logistic regression and neural network models in a clear and straightforward way.
-- scikit-learn’s built-in datasets and utilities: Used for loading the dataset, preprocessing, and splitting data.
+Key operations of the program:
+1. **Mapper**:
+   - Each line from the input file is processed.
+   - A regular expression (`LOG_PATTERN`) is used to match and extract the timestamp, log level, user, and message from the log line.
+   - The `mapper` yields a key-value pair where the key is the log level and the value is `1` (indicating a single occurrence of that log level).
+   
+2. **Reducer**:
+   - The reducer receives the log level (key) and a list of counts (values).
+   - It sums the counts for each log level and yields the total count for that level.
 
-The key operations of the program:
-1. **Data loading and preprocessing**: Loads the Iris dataset, transforms the problem into binary classification, and standardizes the feature values.
-2. **Model building**: 
-   - First model: Logistic regression (1 dense layer with sigmoid).
-   - Second model: Neural network (1 hidden layer with ReLU + 1 output layer with sigmoid).
-3. **Model compilation and training**: Models are compiled with the Adam optimizer and trained using binary cross-entropy loss.
-4. **Evaluation**: Accuracy of both models is evaluated on test data.
-
-Potential real-life use cases:
-- Binary classification tasks like spam detection, disease prediction (e.g., diabetes: yes/no), or quality control (defective product or not).
-- Comparing the performance of simpler models vs. deeper neural networks on real-world problems.
-
-A sample input/output scenario with an explanation:
-- Suppose a sample from the Iris dataset has these features (after scaling): `[0.5, -1.2, 0.3, 0.1]`
-- The logistic regression model processes the input and outputs a value between 0 and 1 (say 0.85), indicating the probability that it's a Setosa flower.
-- If the probability is above 0.5, it classifies it as Setosa (1), otherwise not (0).
-- Output might be:
-  Logistic Regression Accuracy: 0.9333  
-  Neural Network Accuracy: 0.9555  
-  This suggests that the neural network performed slightly better on this binary classification task.
+Observations/Conclusions:
+- **Input Format**: The log lines are assumed to be in the format `"[timestamp] [log_level] [user] message"`, where each part is enclosed in square brackets.
+- **Output**: The final output will be a count of how many times each log level appears in the input dataset.
+  - Example output could look like:
+    - `INFO 10`
+    - `ERROR 3`
+    - `WARNING 5`
+- **Regular Expression**: The `LOG_PATTERN` regex is designed to capture the four parts of each log entry: timestamp, log level, user, and message. This allows the program to extract and process the log level for counting.
+- **Efficiency**: The program utilizes MapReduce's distributed processing, which makes it scalable and efficient for processing large amounts of log data. The `mapper` and `reducer` functions are designed to work in parallel across multiple machines in a distributed system.
 """
